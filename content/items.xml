@@ -1,0 +1,3 @@
+<items gfxroot="gfx/items/" version="1">
+	<active name="Inquisitor spike" description="Poke for power" gfx="inquisitor_spike.png" maxcharges="0" />
+</items>

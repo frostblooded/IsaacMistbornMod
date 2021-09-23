@@ -1,0 +1,7 @@
+<entities anm2root="gfx/" version="1">
+	<entity anm2path="002.c01_inquisitor_spike.anm2" baseHP="0" boss="0" collisionDamage="0"
+		collisionMass="20" collisionRadius="20" friction="1" id="2" name="Inquisitor spike"
+		numGridcollisionPoints="20" shadowSize="20" stageHP="0" variant="0">
+		<gibs amount="0" blood="0" bone="0" eye="0" gut="0" large="0" />
+	</entity>
+</entities>
