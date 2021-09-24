@@ -5,6 +5,10 @@ local game = Game()
 Mistborn.INQUISITOR_SPIKE_TEAR_VARIANT_ID = Isaac.GetEntityVariantByName("Inquisitor spike")
 Mistborn.Active = false
 
+Mistborn.Stats = {
+  Damage = 0
+}
+
 MistbornConfig = {
   SPIKE_SPEED = 10
 }
@@ -49,3 +53,41 @@ function Mistborn:TearUpdate(tear)
 end
 
 Mistborn:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, Mistborn.TearUpdate)
+
+function Mistborn:TakeDamage(damagedEntity, damageAmount, damageFlags, damageSource, damageCountdownFrames)
+  if damageSource.Variant ~= Mistborn.INQUISITOR_SPIKE_TEAR_VARIANT_ID then
+    return
+  end
+  
+  local npc = damagedEntity:ToNPC()
+  
+  if npc and npc:IsActiveEnemy(true) then
+    local data = npc:GetData()
+    
+    -- TODO: Do this in a better way
+    local willDie = npc.HitPoints - damageAmount <= 0
+    
+    if willDie and not data.alreadyDied then
+      data.alreadyDied = true
+      local player = Isaac.GetPlayer(0)
+      Mistborn.Stats.Damage = Mistborn.Stats.Damage + 1
+      Isaac.DebugString("Add damage")
+      player:AddCacheFlags(CacheFlag.CACHE_DAMAGE)
+      player:EvaluateItems()
+    elseif damagedEntity.ParentNPC then
+      data.alreadyDied = true
+    end
+  end
+end
+
+Mistborn:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, Mistborn.TakeDamage)
+
+function Mistborn:EvalCache(player, cacheFlag)
+  Isaac.DebugString("Eval cache: " .. tostring(cacheFlag))
+  
+  if cacheFlag == CacheFlag.CACHE_DAMAGE then
+    player.Damage = player.Damage + Mistborn.Stats.Damage
+  end
+end
+
+Mistborn:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, Mistborn.EvalCache)
