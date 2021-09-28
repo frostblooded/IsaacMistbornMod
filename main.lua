@@ -1,3 +1,5 @@
+local json = require("json")
+
 local Mistborn = RegisterMod("Mistborn", 1)
 
 Mistborn.COLLECTIBLE_INQUISITOR_SPIKE = Isaac.GetItemIdByName("Inquisitor spike")
@@ -80,8 +82,6 @@ function AddRandomStat(player)
   local increaseKey = math.randomkey(Mistborn.StatIncreases)
   local increaseVal = Mistborn.StatIncreases[increaseKey]
   
-  print("Adding stat " .. increaseKey)
-  
   local increaseActions = {
     ["DAMAGE"] = function ()
       Mistborn.Stats.Damage = Mistborn.Stats.Damage + increaseVal
@@ -151,17 +151,27 @@ end
 Mistborn:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, Mistborn.EvalCache)
 
 function Mistborn:GameStart(continued)
-  if continued then
-    return
-  end
-  
   local player = game:GetPlayer(0)
-  initStatsCache()
+  
+  if not continued then
+    initStatsCache()
+    player:AddCollectible(Mistborn.COLLECTIBLE_INQUISITOR_SPIKE, 3)
+  else
+    if Mistborn:HasData() then
+      Mistborn.Stats = json.decode(Mistborn:LoadData())
+    end
+  end
+    
   player:AddCacheFlags(CacheFlag.CACHE_ALL)
   player:EvaluateItems()
-  player:AddCollectible(Mistborn.COLLECTIBLE_INQUISITOR_SPIKE, 3)
 end
 
 Mistborn:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, Mistborn.GameStart)
+
+function Mistborn:SaveGame()
+    Mistborn:SaveData(json.encode(Mistborn.Stats))
+end
+
+Mistborn:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, Mistborn.SaveGame)
 
 initStatsCache()
